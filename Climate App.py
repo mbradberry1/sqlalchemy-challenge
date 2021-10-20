@@ -9,23 +9,17 @@ from flask import Flask, jsonify
 
 import datetime as dt
 
-
 engine = create_engine("sqlite:///Resources/hawaii.sqlite")
-
 
 Base = automap_base()
 Base.prepare(engine, reflect = True)
 
-
 Measurement = Base.classes.measurement
 Station = Base.classes.station
 
-
 session = Session(engine)
 
-
 app = Flask(__name__)
-
 
 def calc_temps(start_date, end_date):
     """TMIN, TAVG, and TMAX for a list of dates.
@@ -40,7 +34,6 @@ def calc_temps(start_date, end_date):
     
     return session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).\
         filter(Measurement.date >= start_date).filter(Measurement.date <= end_date).all()
-
 
 #Flask Routes
 
@@ -65,15 +58,12 @@ def precipitation():
     final_date_query = session.query(func.max(func.strftime("%Y-%m-%d", Measurement.date))).all()
     max_date_string = final_date_query[0][0]
     max_date = dt.datetime.strptime(max_date_string, "%Y-%m-%d")
-
     
     begin_date = max_date - dt.timedelta(365)
-
     
     precipitation_data = session.query(func.strftime("%Y-%m-%d", Measurement.date), Measurement.prcp).\
         filter(func.strftime("%Y-%m-%d", Measurement.date) >= begin_date).all()
     
-
     results_dict = {}
     for result in precipitation_data:
         results_dict[result[0]] = result[1]
@@ -85,11 +75,9 @@ def stations():
     """Return a JSON list of stations from the dataset."""
 
     print("Received station api request.")
-
    
     stations = session.query(Station).all()
 
-    
     stations_list = []
     for station in stations:
         station_dict = {}
@@ -108,20 +96,16 @@ def tobs():
     """Return a JSON list of temperature observations for the previous year."""
 
     print("Received tobs api request.")
-
     
     final_date_query = session.query(func.max(func.strftime("%Y-%m-%d", Measurement.date))).all()
     max_date_string = final_date_query[0][0]
     max_date = dt.datetime.strptime(max_date_string, "%Y-%m-%d")
 
-    
     begin_date = max_date - dt.timedelta(365)
 
-    
     results = session.query(Measurement).\
         filter(func.strftime("%Y-%m-%d", Measurement.date) >= begin_date).all()
 
-    
     tobs_list = []
     for result in results:
         tobs_dict = {}
@@ -136,14 +120,11 @@ def tobs():
 def start(start):
 
     print("Received start date api request.")
-
     
     final_date_query = session.query(func.max(func.strftime("%Y-%m-%d", Measurement.date))).all()
     max_date = final_date_query[0][0]
-
     
     temps = calc_temps(start, max_date)
-
     
     return_list = []
     date_dict = {'start_date': start, 'end_date': max_date}
@@ -161,10 +142,8 @@ def start_end(start, end):
 
     print("Received start date and end date api request.")
 
-   
     temps = calc_temps(start, end)
 
-    
     return_list = []
     date_dict = {'start_date': start, 'end_date': end}
     return_list.append(date_dict)
